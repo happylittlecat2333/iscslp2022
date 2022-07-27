@@ -1,0 +1,1598 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta name="google-site-verification" content="ftFOlJETX-2KNjaPh8W6s8lhigItRuu9fOmjHZZ0nY0" />
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
+    integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+
+  <title>ECAPA-TDNN for Multi-speaker Text-to-speech Synthesis</title>
+</head>
+<style type="text/css">
+  table {
+    width: 100%;
+    table-layout: fixed;
+  }
+
+  audio {
+    width: 100%;
+  }
+
+  thead>tr>th:first-child {
+    width: 96px;
+  }
+
+  @media (max-width: 767px) {
+    .big-screen {
+      display: none;
+    }
+  }
+
+  @media (min-width: 767px) {
+    .small-screen {
+      display: none;
+    }
+  }
+</style>
+
+<body>
+  <header class="header">
+    <div class="jumbotron bg-secondary text-center">
+      <div class="container">
+        <div class="row align-items-center">
+          <div class="col-md-12">
+            <h1><a class="text-light">ECAPA-TDNN for Multi-speaker Text-to-speech Synthesis</h1><br>
+            <font size=5><span style="color:#FFFFFF">
+                Jinlong Xue<sup>1</sup>
+                Yayue Deng<sup>1,2</sup>
+                Yichen Han<sup>1</sup>
+                Ya Li<sup>1,*</sup>
+                Jianqing Sun<sup>3</sup>
+                Jiaen Liang<sup>3</sup>
+                </br>
+                <font size=4><span style="color:#000000">
+                    jinlong_xue@bupt.edu.cn &nbsp
+                    dengyayue.stu@gmail.com &nbsp
+                    adelacvgaoiro@bupt.edu.cn &nbsp<br>
+                    yli01@bupt.edu.cn &nbsp
+                    sunjianqing@unisound.com &nbsp
+                    liangjiaen@unisound.com
+                </font>
+                <font size=4> <br> <br>
+                  <sup>1</sup> School of Artificial Intelligence, Beijing University of Posts and
+                  Telecommunications, Beijing, China<br>
+                  <sup>2</sup> Beijing Language and Culture University, Beijing, China<br>
+                  <sup>3</sup> Unisound AI Technology Co., Ltd, Beijing, China
+                  <br>
+                </font> </a>
+                <p>
+                <div class="row">
+                </div>
+                </p>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+  <main>
+    <div class="container">
+      <div class="row" id="result">
+        <div class="col-md-12">
+          <h2>----------------------------- Model Architecture ------------------------ </h2>
+          <br />
+          <img src="./framework.png" width="1050" height="450" />
+          <p>
+          <figcaption style="text-align:center;">
+            </font>
+            <font size=3>
+              The illustration of our proposed multi-speaker speech synthesis model. (a) introduces the training and
+              inference
+              workflows in our experiments. (b) shows The whole network of ECAPA-TDNN. K stands for kernel size and
+              d for dilation. C
+              and T denote channels and temporal dimensions. (c) is The detailed illustration of SE-Res2Block in the
+              ECAPA-TDNN model.</font>
+          </figcaption><br>
+          <!-- The codes of this paper are available <a href="https://github.com/KunZhou9646/seq2seq-EVC">here</a>.<br><p> -->
+
+          <div class="big-screen">
+            <br /><br />
+            <h2>------------------------------ Speech Samples ---------------------------- </h2>
+
+
+            <br /><br />
+            <!--  Speech Quality Evaluation -->
+            </thead> <b>Experimental Setup:</b>
+            <p>
+
+            <h6>(1) <b>ground-truth</b>: the real utterances from the datasets.</h6>
+            <h6>(2) <b>reconstruct </b>: directly convert the ground-truth mel spectrograms back to speech.
+            </h6>
+            <h6>(3) <b>baseline </b>: FastSpeech 2 with look-up table. (baseline cannot used in unseen speaker test)
+            </h6>
+            <h6>(4) <b>x-vector </b>: FastSpeech 2 with pretrained x-vector speaker encoder. </h6>
+            <h6>(5) <b>deepspeaker </b>: FastSpeech 2 with pretrained Deep Speaker speaker encoder. </h6>
+            <h6>(6) <b>speakernet </b>: FastSpeech 2 with pretrained SpeakerNet speaker encoder. </h6>
+            <h6>(7) <b>ecapa (proposed) </b>: our proposed method by combining FastSpeech 2 with pretrained
+              ECAPA-TDNN speaker encoder.</h6>
+
+            <h6> <b>Note:</b>
+              we split the VCTK dataset for training and testing: 8 speakers are held as unseen speakers cloning
+              test, and others
+              101 speakers are used to train and evaluate models for seen speakers. We use LibriTTS for the
+              unseen speaker cloning
+              test. The pretrained models will not be finetuned and be adapted in useen speakers in our
+              experiments to evaluate the voice
+              cloing ability of our proposed method. Baseline use look-up table so it cannot be used in unseen speaker
+              test.<p>
+
+              <table class="table">
+                <thead>
+                  <th colspan=5>
+                    <h4>(1) Seen Speaker In VCTK</h4>
+                  </th>
+                  <tr>
+
+
+                  </tr>
+
+                  <table style="height: 100px;" border="2" width="611">
+                    <tbody>
+
+                      <tr>
+
+                        <td style="text-align: center; width: 100px;"> ground-truth</th>
+                        <td style="text-align: center; width: 100px;"> reconstruct</th>
+                        <td style="text-align: center; width: 100px;"> baseline</th>
+                        <td style="text-align: center; width: 100px;"> x-vector</th>
+                        <td style="text-align: center; width: 100px;"> deepspeaker</th>
+                        <td style="text-align: center; width: 100px;"> speakernet</th>
+                        <td style="text-align: center; width: 100px;"> ecapa</th>
+
+                      </tr>
+                      <!--  single sentence -->
+
+                      <!--  single sentence -->
+
+                      <td>
+                        <audio controls>
+                          <source
+                            src="./samples/mos/new-VCTK_v2_no_avg_split-seen_speakers_test/raw/p234_neutral_p234_177.wav"
+                            type="audio/wav" />
+                          Your browser does not support the audio element.
+                        </audio>
+                      </td>
+
+
+                      <td>
+                        <audio controls>
+                          <source
+                            src="./samples/mos/new-VCTK_v2_no_avg_split-seen_speakers_test/reconstruct/p234_neutral_p234_177.wav"
+                            type="audio/wav" />
+                          Your browser does not support the audio element.
+                        </audio>
+                      </td>
+
+
+                      <td>
+                        <audio controls>
+                          <source
+                            src="./samples/mos/new-VCTK_v2_no_avg_split-seen_speakers_test/baseline/p234_neutral_p234_177.wav"
+                            type="audio/wav" />
+                          Your browser does not support the audio element.
+                        </audio>
+                      </td>
+
+
+                      <td>
+                        <audio controls>
+                          <source
+                            src="./samples/mos/new-VCTK_v2_no_avg_split-seen_speakers_test/xvector/p234_neutral_p234_177.wav"
+                            type="audio/wav" />
+                          Your browser does not support the audio element.
+                        </audio>
+                      </td>
+
+
+                      <td>
+                        <audio controls>
+                          <source
+                            src="./samples/mos/new-VCTK_v2_no_avg_split-seen_speakers_test/DeepSpeaker/p234_neutral_p234_177.wav"
+                            type="audio/wav" />
+                          Your browser does not support the audio element.
+                        </audio>
+                      </td>
+
+
+                      <td>
+                        <audio controls>
+                          <source
+                            src="./samples/mos/new-VCTK_v2_no_avg_split-seen_speakers_test/SpeakerNet/p234_neutral_p234_177.wav"
+                            type="audio/wav" />
+                          Your browser does not support the audio element.
+                        </audio>
+                      </td>
+
+
+                      <td>
+                        <audio controls>
+                          <source
+                            src="./samples/mos/new-VCTK_v2_no_avg_split-seen_speakers_test/ECAPA-TDNN/p234_neutral_p234_177.wav"
+                            type="audio/wav" />
+                          Your browser does not support the audio element.
+                        </audio>
+                      </td>
+
+                      </tr>
+                      <!--  single sentence -->
+
+                      <td>
+                        <audio controls>
+                          <source
+                            src="./samples/mos/new-VCTK_v2_no_avg_split-seen_speakers_test/raw/p257_neutral_p257_142.wav"
+                            type="audio/wav" />
+                          Your browser does not support the audio element.
+                        </audio>
+                      </td>
+
+
+                      <td>
+                        <audio controls>
+                          <source
+                            src="./samples/mos/new-VCTK_v2_no_avg_split-seen_speakers_test/reconstruct/p257_neutral_p257_142.wav"
+                            type="audio/wav" />
+                          Your browser does not support the audio element.
+                        </audio>
+                      </td>
+
+
+                      <td>
+                        <audio controls>
+                          <source
+                            src="./samples/mos/new-VCTK_v2_no_avg_split-seen_speakers_test/baseline/p257_neutral_p257_142.wav"
+                            type="audio/wav" />
+                          Your browser does not support the audio element.
+                        </audio>
+                      </td>
+
+
+                      <td>
+                        <audio controls>
+                          <source
+                            src="./samples/mos/new-VCTK_v2_no_avg_split-seen_speakers_test/xvector/p257_neutral_p257_142.wav"
+                            type="audio/wav" />
+                          Your browser does not support the audio element.
+                        </audio>
+                      </td>
+
+
+                      <td>
+                        <audio controls>
+                          <source
+                            src="./samples/mos/new-VCTK_v2_no_avg_split-seen_speakers_test/DeepSpeaker/p257_neutral_p257_142.wav"
+                            type="audio/wav" />
+                          Your browser does not support the audio element.
+                        </audio>
+                      </td>
+
+
+                      <td>
+                        <audio controls>
+                          <source
+                            src="./samples/mos/new-VCTK_v2_no_avg_split-seen_speakers_test/SpeakerNet/p257_neutral_p257_142.wav"
+                            type="audio/wav" />
+                          Your browser does not support the audio element.
+                        </audio>
+                      </td>
+
+
+                      <td>
+                        <audio controls>
+                          <source
+                            src="./samples/mos/new-VCTK_v2_no_avg_split-seen_speakers_test/ECAPA-TDNN/p257_neutral_p257_142.wav"
+                            type="audio/wav" />
+                          Your browser does not support the audio element.
+                        </audio>
+                      </td>
+
+                      </tr>
+                      <!--  single sentence -->
+
+                      <td>
+                        <audio controls>
+                          <source
+                            src="./samples/mos/new-VCTK_v2_no_avg_split-seen_speakers_test/raw/p266_neutral_p266_360.wav"
+                            type="audio/wav" />
+                          Your browser does not support the audio element.
+                        </audio>
+                      </td>
+
+
+                      <td>
+                        <audio controls>
+                          <source
+                            src="./samples/mos/new-VCTK_v2_no_avg_split-seen_speakers_test/reconstruct/p266_neutral_p266_360.wav"
+                            type="audio/wav" />
+                          Your browser does not support the audio element.
+                        </audio>
+                      </td>
+
+
+                      <td>
+                        <audio controls>
+                          <source
+                            src="./samples/mos/new-VCTK_v2_no_avg_split-seen_speakers_test/baseline/p266_neutral_p266_360.wav"
+                            type="audio/wav" />
+                          Your browser does not support the audio element.
+                        </audio>
+                      </td>
+
+
+                      <td>
+                        <audio controls>
+                          <source
+                            src="./samples/mos/new-VCTK_v2_no_avg_split-seen_speakers_test/xvector/p266_neutral_p266_360.wav"
+                            type="audio/wav" />
+                          Your browser does not support the audio element.
+                        </audio>
+                      </td>
+
+
+                      <td>
+                        <audio controls>
+                          <source
+                            src="./samples/mos/new-VCTK_v2_no_avg_split-seen_speakers_test/DeepSpeaker/p266_neutral_p266_360.wav"
+                            type="audio/wav" />
+                          Your browser does not support the audio element.
+                        </audio>
+                      </td>
+
+
+                      <td>
+                        <audio controls>
+                          <source
+                            src="./samples/mos/new-VCTK_v2_no_avg_split-seen_speakers_test/SpeakerNet/p266_neutral_p266_360.wav"
+                            type="audio/wav" />
+                          Your browser does not support the audio element.
+                        </audio>
+                      </td>
+
+
+                      <td>
+                        <audio controls>
+                          <source
+                            src="./samples/mos/new-VCTK_v2_no_avg_split-seen_speakers_test/ECAPA-TDNN/p266_neutral_p266_360.wav"
+                            type="audio/wav" />
+                          Your browser does not support the audio element.
+                        </audio>
+                      </td>
+
+                      </tr>
+                      <!--  single sentence -->
+
+                      <td>
+                        <audio controls>
+                          <source
+                            src="./samples/mos/new-VCTK_v2_no_avg_split-seen_speakers_test/raw/p276_neutral_p276_282.wav"
+                            type="audio/wav" />
+                          Your browser does not support the audio element.
+                        </audio>
+                      </td>
+
+
+                      <td>
+                        <audio controls>
+                          <source
+                            src="./samples/mos/new-VCTK_v2_no_avg_split-seen_speakers_test/reconstruct/p276_neutral_p276_282.wav"
+                            type="audio/wav" />
+                          Your browser does not support the audio element.
+                        </audio>
+                      </td>
+
+
+                      <td>
+                        <audio controls>
+                          <source
+                            src="./samples/mos/new-VCTK_v2_no_avg_split-seen_speakers_test/baseline/p276_neutral_p276_282.wav"
+                            type="audio/wav" />
+                          Your browser does not support the audio element.
+                        </audio>
+                      </td>
+
+
+                      <td>
+                        <audio controls>
+                          <source
+                            src="./samples/mos/new-VCTK_v2_no_avg_split-seen_speakers_test/xvector/p276_neutral_p276_282.wav"
+                            type="audio/wav" />
+                          Your browser does not support the audio element.
+                        </audio>
+                      </td>
+
+
+                      <td>
+                        <audio controls>
+                          <source
+                            src="./samples/mos/new-VCTK_v2_no_avg_split-seen_speakers_test/DeepSpeaker/p276_neutral_p276_282.wav"
+                            type="audio/wav" />
+                          Your browser does not support the audio element.
+                        </audio>
+                      </td>
+
+
+                      <td>
+                        <audio controls>
+                          <source
+                            src="./samples/mos/new-VCTK_v2_no_avg_split-seen_speakers_test/SpeakerNet/p276_neutral_p276_282.wav"
+                            type="audio/wav" />
+                          Your browser does not support the audio element.
+                        </audio>
+                      </td>
+
+
+                      <td>
+                        <audio controls>
+                          <source
+                            src="./samples/mos/new-VCTK_v2_no_avg_split-seen_speakers_test/ECAPA-TDNN/p276_neutral_p276_282.wav"
+                            type="audio/wav" />
+                          Your browser does not support the audio element.
+                        </audio>
+                      </td>
+
+                      </tr>
+                      <!--  single sentence -->
+
+                      <td>
+                        <audio controls>
+                          <source
+                            src="./samples/mos/new-VCTK_v2_no_avg_split-seen_speakers_test/raw/p245_neutral_p245_237.wav"
+                            type="audio/wav" />
+                          Your browser does not support the audio element.
+                        </audio>
+                      </td>
+
+
+                      <td>
+                        <audio controls>
+                          <source
+                            src="./samples/mos/new-VCTK_v2_no_avg_split-seen_speakers_test/reconstruct/p245_neutral_p245_237.wav"
+                            type="audio/wav" />
+                          Your browser does not support the audio element.
+                        </audio>
+                      </td>
+
+
+                      <td>
+                        <audio controls>
+                          <source
+                            src="./samples/mos/new-VCTK_v2_no_avg_split-seen_speakers_test/baseline/p245_neutral_p245_237.wav"
+                            type="audio/wav" />
+                          Your browser does not support the audio element.
+                        </audio>
+                      </td>
+
+
+                      <td>
+                        <audio controls>
+                          <source
+                            src="./samples/mos/new-VCTK_v2_no_avg_split-seen_speakers_test/xvector/p245_neutral_p245_237.wav"
+                            type="audio/wav" />
+                          Your browser does not support the audio element.
+                        </audio>
+                      </td>
+
+
+                      <td>
+                        <audio controls>
+                          <source
+                            src="./samples/mos/new-VCTK_v2_no_avg_split-seen_speakers_test/DeepSpeaker/p245_neutral_p245_237.wav"
+                            type="audio/wav" />
+                          Your browser does not support the audio element.
+                        </audio>
+                      </td>
+
+
+                      <td>
+                        <audio controls>
+                          <source
+                            src="./samples/mos/new-VCTK_v2_no_avg_split-seen_speakers_test/SpeakerNet/p245_neutral_p245_237.wav"
+                            type="audio/wav" />
+                          Your browser does not support the audio element.
+                        </audio>
+                      </td>
+
+
+                      <td>
+                        <audio controls>
+                          <source
+                            src="./samples/mos/new-VCTK_v2_no_avg_split-seen_speakers_test/ECAPA-TDNN/p245_neutral_p245_237.wav"
+                            type="audio/wav" />
+                          Your browser does not support the audio element.
+                        </audio>
+                      </td>
+
+                      </tr>
+                      <!--  single sentence -->
+
+                      <td>
+                        <audio controls>
+                          <source
+                            src="./samples/mos/new-VCTK_v2_no_avg_split-seen_speakers_test/raw/p275_neutral_p275_316.wav"
+                            type="audio/wav" />
+                          Your browser does not support the audio element.
+                        </audio>
+                      </td>
+
+
+                      <td>
+                        <audio controls>
+                          <source
+                            src="./samples/mos/new-VCTK_v2_no_avg_split-seen_speakers_test/reconstruct/p275_neutral_p275_316.wav"
+                            type="audio/wav" />
+                          Your browser does not support the audio element.
+                        </audio>
+                      </td>
+
+
+                      <td>
+                        <audio controls>
+                          <source
+                            src="./samples/mos/new-VCTK_v2_no_avg_split-seen_speakers_test/baseline/p275_neutral_p275_316.wav"
+                            type="audio/wav" />
+                          Your browser does not support the audio element.
+                        </audio>
+                      </td>
+
+
+                      <td>
+                        <audio controls>
+                          <source
+                            src="./samples/mos/new-VCTK_v2_no_avg_split-seen_speakers_test/xvector/p275_neutral_p275_316.wav"
+                            type="audio/wav" />
+                          Your browser does not support the audio element.
+                        </audio>
+                      </td>
+
+
+                      <td>
+                        <audio controls>
+                          <source
+                            src="./samples/mos/new-VCTK_v2_no_avg_split-seen_speakers_test/DeepSpeaker/p275_neutral_p275_316.wav"
+                            type="audio/wav" />
+                          Your browser does not support the audio element.
+                        </audio>
+                      </td>
+
+
+                      <td>
+                        <audio controls>
+                          <source
+                            src="./samples/mos/new-VCTK_v2_no_avg_split-seen_speakers_test/SpeakerNet/p275_neutral_p275_316.wav"
+                            type="audio/wav" />
+                          Your browser does not support the audio element.
+                        </audio>
+                      </td>
+
+
+                      <td>
+                        <audio controls>
+                          <source
+                            src="./samples/mos/new-VCTK_v2_no_avg_split-seen_speakers_test/ECAPA-TDNN/p275_neutral_p275_316.wav"
+                            type="audio/wav" />
+                          Your browser does not support the audio element.
+                        </audio>
+                      </td>
+
+                      </tr>
+                      <!--  single sentence -->
+
+                      <td>
+                        <audio controls>
+                          <source
+                            src="./samples/mos/new-VCTK_v2_no_avg_split-seen_speakers_test/raw/p376_neutral_p376_137.wav"
+                            type="audio/wav" />
+                          Your browser does not support the audio element.
+                        </audio>
+                      </td>
+
+
+                      <td>
+                        <audio controls>
+                          <source
+                            src="./samples/mos/new-VCTK_v2_no_avg_split-seen_speakers_test/reconstruct/p376_neutral_p376_137.wav"
+                            type="audio/wav" />
+                          Your browser does not support the audio element.
+                        </audio>
+                      </td>
+
+
+                      <td>
+                        <audio controls>
+                          <source
+                            src="./samples/mos/new-VCTK_v2_no_avg_split-seen_speakers_test/baseline/p376_neutral_p376_137.wav"
+                            type="audio/wav" />
+                          Your browser does not support the audio element.
+                        </audio>
+                      </td>
+
+
+                      <td>
+                        <audio controls>
+                          <source
+                            src="./samples/mos/new-VCTK_v2_no_avg_split-seen_speakers_test/xvector/p376_neutral_p376_137.wav"
+                            type="audio/wav" />
+                          Your browser does not support the audio element.
+                        </audio>
+                      </td>
+
+
+                      <td>
+                        <audio controls>
+                          <source
+                            src="./samples/mos/new-VCTK_v2_no_avg_split-seen_speakers_test/DeepSpeaker/p376_neutral_p376_137.wav"
+                            type="audio/wav" />
+                          Your browser does not support the audio element.
+                        </audio>
+                      </td>
+
+
+                      <td>
+                        <audio controls>
+                          <source
+                            src="./samples/mos/new-VCTK_v2_no_avg_split-seen_speakers_test/SpeakerNet/p376_neutral_p376_137.wav"
+                            type="audio/wav" />
+                          Your browser does not support the audio element.
+                        </audio>
+                      </td>
+
+
+                      <td>
+                        <audio controls>
+                          <source
+                            src="./samples/mos/new-VCTK_v2_no_avg_split-seen_speakers_test/ECAPA-TDNN/p376_neutral_p376_137.wav"
+                            type="audio/wav" />
+                          Your browser does not support the audio element.
+                        </audio>
+                      </td>
+
+                      </tr>
+                      <!--  single sentence -->
+
+                      <td>
+                        <audio controls>
+                          <source
+                            src="./samples/mos/new-VCTK_v2_no_avg_split-seen_speakers_test/raw/p254_neutral_p254_068.wav"
+                            type="audio/wav" />
+                          Your browser does not support the audio element.
+                        </audio>
+                      </td>
+
+
+                      <td>
+                        <audio controls>
+                          <source
+                            src="./samples/mos/new-VCTK_v2_no_avg_split-seen_speakers_test/reconstruct/p254_neutral_p254_068.wav"
+                            type="audio/wav" />
+                          Your browser does not support the audio element.
+                        </audio>
+                      </td>
+
+
+                      <td>
+                        <audio controls>
+                          <source
+                            src="./samples/mos/new-VCTK_v2_no_avg_split-seen_speakers_test/baseline/p254_neutral_p254_068.wav"
+                            type="audio/wav" />
+                          Your browser does not support the audio element.
+                        </audio>
+                      </td>
+
+
+                      <td>
+                        <audio controls>
+                          <source
+                            src="./samples/mos/new-VCTK_v2_no_avg_split-seen_speakers_test/xvector/p254_neutral_p254_068.wav"
+                            type="audio/wav" />
+                          Your browser does not support the audio element.
+                        </audio>
+                      </td>
+
+
+                      <td>
+                        <audio controls>
+                          <source
+                            src="./samples/mos/new-VCTK_v2_no_avg_split-seen_speakers_test/DeepSpeaker/p254_neutral_p254_068.wav"
+                            type="audio/wav" />
+                          Your browser does not support the audio element.
+                        </audio>
+                      </td>
+
+
+                      <td>
+                        <audio controls>
+                          <source
+                            src="./samples/mos/new-VCTK_v2_no_avg_split-seen_speakers_test/SpeakerNet/p254_neutral_p254_068.wav"
+                            type="audio/wav" />
+                          Your browser does not support the audio element.
+                        </audio>
+                      </td>
+
+
+                      <td>
+                        <audio controls>
+                          <source
+                            src="./samples/mos/new-VCTK_v2_no_avg_split-seen_speakers_test/ECAPA-TDNN/p254_neutral_p254_068.wav"
+                            type="audio/wav" />
+                          Your browser does not support the audio element.
+                        </audio>
+                      </td>
+
+                      </tr>
+
+
+
+                      <tr>
+                      </tr>
+                    </tbody>
+                  </table>
+
+                  <table class="table">
+                    <thead>
+                      <th colspan=5>
+                        <h4>(2) Unseen Speaker in VCTK</h4>
+                      </th>
+                      <tr>
+
+
+                      </tr>
+
+                      <table style="height: 100px;" border="2" width="611">
+                        <tbody>
+
+                          <tr>
+
+                            <td style="text-align: center; width: 100px;"> ground-truth</th>
+                            <td style="text-align: center; width: 100px;"> reconstruct</th>
+                            <td style="text-align: center; width: 100px;"> x-vector</th>
+                            <td style="text-align: center; width: 100px;"> deepspeaker</th>
+                            <td style="text-align: center; width: 100px;"> speakernet</th>
+                            <td style="text-align: center; width: 100px;"> ecapa</th>
+
+                          </tr>
+
+                          <!--  single sentence -->
+
+                          <td>
+                            <audio controls>
+                              <source
+                                src="./samples/mos/new-VCTK_v2_no_avg_split-unseen_speakers/raw/p229_neutral_p229_195.wav"
+                                type="audio/wav" />
+                              Your browser does not support the audio element.
+                            </audio>
+                          </td>
+
+
+                          <td>
+                            <audio controls>
+                              <source
+                                src="./samples/mos/new-VCTK_v2_no_avg_split-unseen_speakers/reconstruct/p229_neutral_p229_195.wav"
+                                type="audio/wav" />
+                              Your browser does not support the audio element.
+                            </audio>
+                          </td>
+
+
+                          <td>
+                            <audio controls>
+                              <source
+                                src="./samples/mos/new-VCTK_v2_no_avg_split-unseen_speakers/xvector/p229_neutral_p229_195.wav"
+                                type="audio/wav" />
+                              Your browser does not support the audio element.
+                            </audio>
+                          </td>
+
+
+                          <td>
+                            <audio controls>
+                              <source
+                                src="./samples/mos/new-VCTK_v2_no_avg_split-unseen_speakers/DeepSpeaker/p229_neutral_p229_195.wav"
+                                type="audio/wav" />
+                              Your browser does not support the audio element.
+                            </audio>
+                          </td>
+
+
+                          <td>
+                            <audio controls>
+                              <source
+                                src="./samples/mos/new-VCTK_v2_no_avg_split-unseen_speakers/SpeakerNet/p229_neutral_p229_195.wav"
+                                type="audio/wav" />
+                              Your browser does not support the audio element.
+                            </audio>
+                          </td>
+
+
+                          <td>
+                            <audio controls>
+                              <source
+                                src="./samples/mos/new-VCTK_v2_no_avg_split-unseen_speakers/ECAPA-TDNN/p229_neutral_p229_195.wav"
+                                type="audio/wav" />
+                              Your browser does not support the audio element.
+                            </audio>
+                          </td>
+
+                          </tr>
+                          <!--  single sentence -->
+
+                          <td>
+                            <audio controls>
+                              <source
+                                src="./samples/mos/new-VCTK_v2_no_avg_split-unseen_speakers/raw/p265_neutral_p265_347.wav"
+                                type="audio/wav" />
+                              Your browser does not support the audio element.
+                            </audio>
+                          </td>
+
+
+                          <td>
+                            <audio controls>
+                              <source
+                                src="./samples/mos/new-VCTK_v2_no_avg_split-unseen_speakers/reconstruct/p265_neutral_p265_347.wav"
+                                type="audio/wav" />
+                              Your browser does not support the audio element.
+                            </audio>
+                          </td>
+
+
+                          <td>
+                            <audio controls>
+                              <source
+                                src="./samples/mos/new-VCTK_v2_no_avg_split-unseen_speakers/xvector/p265_neutral_p265_347.wav"
+                                type="audio/wav" />
+                              Your browser does not support the audio element.
+                            </audio>
+                          </td>
+
+
+                          <td>
+                            <audio controls>
+                              <source
+                                src="./samples/mos/new-VCTK_v2_no_avg_split-unseen_speakers/DeepSpeaker/p265_neutral_p265_347.wav"
+                                type="audio/wav" />
+                              Your browser does not support the audio element.
+                            </audio>
+                          </td>
+
+
+                          <td>
+                            <audio controls>
+                              <source
+                                src="./samples/mos/new-VCTK_v2_no_avg_split-unseen_speakers/SpeakerNet/p265_neutral_p265_347.wav"
+                                type="audio/wav" />
+                              Your browser does not support the audio element.
+                            </audio>
+                          </td>
+
+
+                          <td>
+                            <audio controls>
+                              <source
+                                src="./samples/mos/new-VCTK_v2_no_avg_split-unseen_speakers/ECAPA-TDNN/p265_neutral_p265_347.wav"
+                                type="audio/wav" />
+                              Your browser does not support the audio element.
+                            </audio>
+                          </td>
+
+                          </tr>
+                          <!--  single sentence -->
+
+                          <td>
+                            <audio controls>
+                              <source
+                                src="./samples/mos/new-VCTK_v2_no_avg_split-unseen_speakers/raw/p288_neutral_p288_339.wav"
+                                type="audio/wav" />
+                              Your browser does not support the audio element.
+                            </audio>
+                          </td>
+
+
+                          <td>
+                            <audio controls>
+                              <source
+                                src="./samples/mos/new-VCTK_v2_no_avg_split-unseen_speakers/reconstruct/p288_neutral_p288_339.wav"
+                                type="audio/wav" />
+                              Your browser does not support the audio element.
+                            </audio>
+                          </td>
+
+
+                          <td>
+                            <audio controls>
+                              <source
+                                src="./samples/mos/new-VCTK_v2_no_avg_split-unseen_speakers/xvector/p288_neutral_p288_339.wav"
+                                type="audio/wav" />
+                              Your browser does not support the audio element.
+                            </audio>
+                          </td>
+
+
+                          <td>
+                            <audio controls>
+                              <source
+                                src="./samples/mos/new-VCTK_v2_no_avg_split-unseen_speakers/DeepSpeaker/p288_neutral_p288_339.wav"
+                                type="audio/wav" />
+                              Your browser does not support the audio element.
+                            </audio>
+                          </td>
+
+
+                          <td>
+                            <audio controls>
+                              <source
+                                src="./samples/mos/new-VCTK_v2_no_avg_split-unseen_speakers/SpeakerNet/p288_neutral_p288_339.wav"
+                                type="audio/wav" />
+                              Your browser does not support the audio element.
+                            </audio>
+                          </td>
+
+
+                          <td>
+                            <audio controls>
+                              <source
+                                src="./samples/mos/new-VCTK_v2_no_avg_split-unseen_speakers/ECAPA-TDNN/p288_neutral_p288_339.wav"
+                                type="audio/wav" />
+                              Your browser does not support the audio element.
+                            </audio>
+                          </td>
+
+                          </tr>
+                          <!--  single sentence -->
+
+                          <td>
+                            <audio controls>
+                              <source
+                                src="./samples/mos/new-VCTK_v2_no_avg_split-unseen_speakers/raw/p251_neutral_p251_166.wav"
+                                type="audio/wav" />
+                              Your browser does not support the audio element.
+                            </audio>
+                          </td>
+
+
+                          <td>
+                            <audio controls>
+                              <source
+                                src="./samples/mos/new-VCTK_v2_no_avg_split-unseen_speakers/reconstruct/p251_neutral_p251_166.wav"
+                                type="audio/wav" />
+                              Your browser does not support the audio element.
+                            </audio>
+                          </td>
+
+
+                          <td>
+                            <audio controls>
+                              <source
+                                src="./samples/mos/new-VCTK_v2_no_avg_split-unseen_speakers/xvector/p251_neutral_p251_166.wav"
+                                type="audio/wav" />
+                              Your browser does not support the audio element.
+                            </audio>
+                          </td>
+
+
+                          <td>
+                            <audio controls>
+                              <source
+                                src="./samples/mos/new-VCTK_v2_no_avg_split-unseen_speakers/DeepSpeaker/p251_neutral_p251_166.wav"
+                                type="audio/wav" />
+                              Your browser does not support the audio element.
+                            </audio>
+                          </td>
+
+
+                          <td>
+                            <audio controls>
+                              <source
+                                src="./samples/mos/new-VCTK_v2_no_avg_split-unseen_speakers/SpeakerNet/p251_neutral_p251_166.wav"
+                                type="audio/wav" />
+                              Your browser does not support the audio element.
+                            </audio>
+                          </td>
+
+
+                          <td>
+                            <audio controls>
+                              <source
+                                src="./samples/mos/new-VCTK_v2_no_avg_split-unseen_speakers/ECAPA-TDNN/p251_neutral_p251_166.wav"
+                                type="audio/wav" />
+                              Your browser does not support the audio element.
+                            </audio>
+                          </td>
+
+                          </tr>
+                          <!--  single sentence -->
+
+                          <td>
+                            <audio controls>
+                              <source
+                                src="./samples/mos/new-VCTK_v2_no_avg_split-unseen_speakers/raw/p258_neutral_p258_017.wav"
+                                type="audio/wav" />
+                              Your browser does not support the audio element.
+                            </audio>
+                          </td>
+
+
+                          <td>
+                            <audio controls>
+                              <source
+                                src="./samples/mos/new-VCTK_v2_no_avg_split-unseen_speakers/reconstruct/p258_neutral_p258_017.wav"
+                                type="audio/wav" />
+                              Your browser does not support the audio element.
+                            </audio>
+                          </td>
+
+
+                          <td>
+                            <audio controls>
+                              <source
+                                src="./samples/mos/new-VCTK_v2_no_avg_split-unseen_speakers/xvector/p258_neutral_p258_017.wav"
+                                type="audio/wav" />
+                              Your browser does not support the audio element.
+                            </audio>
+                          </td>
+
+
+                          <td>
+                            <audio controls>
+                              <source
+                                src="./samples/mos/new-VCTK_v2_no_avg_split-unseen_speakers/DeepSpeaker/p258_neutral_p258_017.wav"
+                                type="audio/wav" />
+                              Your browser does not support the audio element.
+                            </audio>
+                          </td>
+
+
+                          <td>
+                            <audio controls>
+                              <source
+                                src="./samples/mos/new-VCTK_v2_no_avg_split-unseen_speakers/SpeakerNet/p258_neutral_p258_017.wav"
+                                type="audio/wav" />
+                              Your browser does not support the audio element.
+                            </audio>
+                          </td>
+
+
+                          <td>
+                            <audio controls>
+                              <source
+                                src="./samples/mos/new-VCTK_v2_no_avg_split-unseen_speakers/ECAPA-TDNN/p258_neutral_p258_017.wav"
+                                type="audio/wav" />
+                              Your browser does not support the audio element.
+                            </audio>
+                          </td>
+
+                          </tr>
+                          <!--  single sentence -->
+
+                          <td>
+                            <audio controls>
+                              <source
+                                src="./samples/mos/new-VCTK_v2_no_avg_split-unseen_speakers/raw/p345_neutral_p345_238.wav"
+                                type="audio/wav" />
+                              Your browser does not support the audio element.
+                            </audio>
+                          </td>
+
+
+                          <td>
+                            <audio controls>
+                              <source
+                                src="./samples/mos/new-VCTK_v2_no_avg_split-unseen_speakers/reconstruct/p345_neutral_p345_238.wav"
+                                type="audio/wav" />
+                              Your browser does not support the audio element.
+                            </audio>
+                          </td>
+
+
+                          <td>
+                            <audio controls>
+                              <source
+                                src="./samples/mos/new-VCTK_v2_no_avg_split-unseen_speakers/xvector/p345_neutral_p345_238.wav"
+                                type="audio/wav" />
+                              Your browser does not support the audio element.
+                            </audio>
+                          </td>
+
+
+                          <td>
+                            <audio controls>
+                              <source
+                                src="./samples/mos/new-VCTK_v2_no_avg_split-unseen_speakers/DeepSpeaker/p345_neutral_p345_238.wav"
+                                type="audio/wav" />
+                              Your browser does not support the audio element.
+                            </audio>
+                          </td>
+
+
+                          <td>
+                            <audio controls>
+                              <source
+                                src="./samples/mos/new-VCTK_v2_no_avg_split-unseen_speakers/SpeakerNet/p345_neutral_p345_238.wav"
+                                type="audio/wav" />
+                              Your browser does not support the audio element.
+                            </audio>
+                          </td>
+
+
+                          <td>
+                            <audio controls>
+                              <source
+                                src="./samples/mos/new-VCTK_v2_no_avg_split-unseen_speakers/ECAPA-TDNN/p345_neutral_p345_238.wav"
+                                type="audio/wav" />
+                              Your browser does not support the audio element.
+                            </audio>
+                          </td>
+
+                          </tr>
+
+                        </tbody>
+                      </table>
+
+                      <table class="table">
+                        <thead>
+                          <th colspan=5>
+                            <h4>(3) Unseen Speaker in LibriTTS</h4>
+                          </th>
+                          <tr>
+
+
+                          </tr>
+
+                          <table style="height: 100px;" border="2" width="611">
+                            <tbody>
+
+                              <tr>
+
+                                <td style="text-align: center; width: 100px;"> ground-truth</th>
+                                <td style="text-align: center; width: 100px;"> reconstruct</th>
+                                <td style="text-align: center; width: 100px;"> x-vector</th>
+                                <td style="text-align: center; width: 100px;"> deepspeaker</th>
+                                <td style="text-align: center; width: 100px;"> speakernet</th>
+                                <td style="text-align: center; width: 100px;"> ecapa</th>
+
+                              </tr>
+                              <!--  single sentence -->
+
+                              <td>
+                                <audio controls>
+                                  <source
+                                    src="./samples/mos/new-VCTK_v2_no_avg_split-ref_embedding/raw/6064_neutral_6064_56165_000032_000000.wav"
+                                    type="audio/wav" />
+                                  Your browser does not support the audio element.
+                                </audio>
+                              </td>
+
+
+                              <td>
+                                <audio controls>
+                                  <source
+                                    src="./samples/mos/new-VCTK_v2_no_avg_split-ref_embedding/reconstruct/6064_neutral_6064_56165_000032_000000.wav"
+                                    type="audio/wav" />
+                                  Your browser does not support the audio element.
+                                </audio>
+                              </td>
+
+
+                              <td>
+                                <audio controls>
+                                  <source
+                                    src="./samples/mos/new-VCTK_v2_no_avg_split-ref_embedding/xvector/6064_neutral_6064_56165_000032_000000.wav"
+                                    type="audio/wav" />
+                                  Your browser does not support the audio element.
+                                </audio>
+                              </td>
+
+
+                              <td>
+                                <audio controls>
+                                  <source
+                                    src="./samples/mos/new-VCTK_v2_no_avg_split-ref_embedding/DeepSpeaker/6064_neutral_6064_56165_000032_000000.wav"
+                                    type="audio/wav" />
+                                  Your browser does not support the audio element.
+                                </audio>
+                              </td>
+
+
+                              <td>
+                                <audio controls>
+                                  <source
+                                    src="./samples/mos/new-VCTK_v2_no_avg_split-ref_embedding/SpeakerNet/6064_neutral_6064_56165_000032_000000.wav"
+                                    type="audio/wav" />
+                                  Your browser does not support the audio element.
+                                </audio>
+                              </td>
+
+
+                              <td>
+                                <audio controls>
+                                  <source
+                                    src="./samples/mos/new-VCTK_v2_no_avg_split-ref_embedding/ECAPA-TDNN/6064_neutral_6064_56165_000032_000000.wav"
+                                    type="audio/wav" />
+                                  Your browser does not support the audio element.
+                                </audio>
+                              </td>
+
+                              </tr>
+                              <!--  single sentence -->
+
+                              <td>
+                                <audio controls>
+                                  <source
+                                    src="./samples/mos/new-VCTK_v2_no_avg_split-ref_embedding/raw/1263_neutral_1263_141777_000004_000000.wav"
+                                    type="audio/wav" />
+                                  Your browser does not support the audio element.
+                                </audio>
+                              </td>
+
+
+                              <td>
+                                <audio controls>
+                                  <source
+                                    src="./samples/mos/new-VCTK_v2_no_avg_split-ref_embedding/reconstruct/1263_neutral_1263_141777_000004_000000.wav"
+                                    type="audio/wav" />
+                                  Your browser does not support the audio element.
+                                </audio>
+                              </td>
+
+
+                              <td>
+                                <audio controls>
+                                  <source
+                                    src="./samples/mos/new-VCTK_v2_no_avg_split-ref_embedding/xvector/1263_neutral_1263_141777_000004_000000.wav"
+                                    type="audio/wav" />
+                                  Your browser does not support the audio element.
+                                </audio>
+                              </td>
+
+
+                              <td>
+                                <audio controls>
+                                  <source
+                                    src="./samples/mos/new-VCTK_v2_no_avg_split-ref_embedding/DeepSpeaker/1263_neutral_1263_141777_000004_000000.wav"
+                                    type="audio/wav" />
+                                  Your browser does not support the audio element.
+                                </audio>
+                              </td>
+
+
+                              <td>
+                                <audio controls>
+                                  <source
+                                    src="./samples/mos/new-VCTK_v2_no_avg_split-ref_embedding/SpeakerNet/1263_neutral_1263_141777_000004_000000.wav"
+                                    type="audio/wav" />
+                                  Your browser does not support the audio element.
+                                </audio>
+                              </td>
+
+
+                              <td>
+                                <audio controls>
+                                  <source
+                                    src="./samples/mos/new-VCTK_v2_no_avg_split-ref_embedding/ECAPA-TDNN/1263_neutral_1263_141777_000004_000000.wav"
+                                    type="audio/wav" />
+                                  Your browser does not support the audio element.
+                                </audio>
+                              </td>
+
+                              </tr>
+                              <!--  single sentence -->
+
+                              <td>
+                                <audio controls>
+                                  <source
+                                    src="./samples/mos/new-VCTK_v2_no_avg_split-ref_embedding/raw/4788_neutral_4788_91208_000008_000000.wav"
+                                    type="audio/wav" />
+                                  Your browser does not support the audio element.
+                                </audio>
+                              </td>
+
+
+                              <td>
+                                <audio controls>
+                                  <source
+                                    src="./samples/mos/new-VCTK_v2_no_avg_split-ref_embedding/reconstruct/4788_neutral_4788_91208_000008_000000.wav"
+                                    type="audio/wav" />
+                                  Your browser does not support the audio element.
+                                </audio>
+                              </td>
+
+
+                              <td>
+                                <audio controls>
+                                  <source
+                                    src="./samples/mos/new-VCTK_v2_no_avg_split-ref_embedding/xvector/4788_neutral_4788_91208_000008_000000.wav"
+                                    type="audio/wav" />
+                                  Your browser does not support the audio element.
+                                </audio>
+                              </td>
+
+
+                              <td>
+                                <audio controls>
+                                  <source
+                                    src="./samples/mos/new-VCTK_v2_no_avg_split-ref_embedding/DeepSpeaker/4788_neutral_4788_91208_000008_000000.wav"
+                                    type="audio/wav" />
+                                  Your browser does not support the audio element.
+                                </audio>
+                              </td>
+
+
+                              <td>
+                                <audio controls>
+                                  <source
+                                    src="./samples/mos/new-VCTK_v2_no_avg_split-ref_embedding/SpeakerNet/4788_neutral_4788_91208_000008_000000.wav"
+                                    type="audio/wav" />
+                                  Your browser does not support the audio element.
+                                </audio>
+                              </td>
+
+
+                              <td>
+                                <audio controls>
+                                  <source
+                                    src="./samples/mos/new-VCTK_v2_no_avg_split-ref_embedding/ECAPA-TDNN/4788_neutral_4788_91208_000008_000000.wav"
+                                    type="audio/wav" />
+                                  Your browser does not support the audio element.
+                                </audio>
+                              </td>
+
+                              </tr>
+                              <!--  single sentence -->
+
+                              <td>
+                                <audio controls>
+                                  <source
+                                    src="./samples/mos/new-VCTK_v2_no_avg_split-ref_embedding/raw/1088_neutral_1088_134315_000108_000000.wav"
+                                    type="audio/wav" />
+                                  Your browser does not support the audio element.
+                                </audio>
+                              </td>
+
+
+                              <td>
+                                <audio controls>
+                                  <source
+                                    src="./samples/mos/new-VCTK_v2_no_avg_split-ref_embedding/reconstruct/1088_neutral_1088_134315_000108_000000.wav"
+                                    type="audio/wav" />
+                                  Your browser does not support the audio element.
+                                </audio>
+                              </td>
+
+
+                              <td>
+                                <audio controls>
+                                  <source
+                                    src="./samples/mos/new-VCTK_v2_no_avg_split-ref_embedding/xvector/1088_neutral_1088_134315_000108_000000.wav"
+                                    type="audio/wav" />
+                                  Your browser does not support the audio element.
+                                </audio>
+                              </td>
+
+
+                              <td>
+                                <audio controls>
+                                  <source
+                                    src="./samples/mos/new-VCTK_v2_no_avg_split-ref_embedding/DeepSpeaker/1088_neutral_1088_134315_000108_000000.wav"
+                                    type="audio/wav" />
+                                  Your browser does not support the audio element.
+                                </audio>
+                              </td>
+
+
+                              <td>
+                                <audio controls>
+                                  <source
+                                    src="./samples/mos/new-VCTK_v2_no_avg_split-ref_embedding/SpeakerNet/1088_neutral_1088_134315_000108_000000.wav"
+                                    type="audio/wav" />
+                                  Your browser does not support the audio element.
+                                </audio>
+                              </td>
+
+
+                              <td>
+                                <audio controls>
+                                  <source
+                                    src="./samples/mos/new-VCTK_v2_no_avg_split-ref_embedding/ECAPA-TDNN/1088_neutral_1088_134315_000108_000000.wav"
+                                    type="audio/wav" />
+                                  Your browser does not support the audio element.
+                                </audio>
+                              </td>
+
+                              </tr>
+                              <!--  single sentence -->
+
+                              <td>
+                                <audio controls>
+                                  <source
+                                    src="./samples/mos/new-VCTK_v2_no_avg_split-ref_embedding/raw/1898_neutral_1898_145724_000010_000000.wav"
+                                    type="audio/wav" />
+                                  Your browser does not support the audio element.
+                                </audio>
+                              </td>
+
+
+                              <td>
+                                <audio controls>
+                                  <source
+                                    src="./samples/mos/new-VCTK_v2_no_avg_split-ref_embedding/reconstruct/1898_neutral_1898_145724_000010_000000.wav"
+                                    type="audio/wav" />
+                                  Your browser does not support the audio element.
+                                </audio>
+                              </td>
+
+
+                              <td>
+                                <audio controls>
+                                  <source
+                                    src="./samples/mos/new-VCTK_v2_no_avg_split-ref_embedding/xvector/1898_neutral_1898_145724_000010_000000.wav"
+                                    type="audio/wav" />
+                                  Your browser does not support the audio element.
+                                </audio>
+                              </td>
+
+
+                              <td>
+                                <audio controls>
+                                  <source
+                                    src="./samples/mos/new-VCTK_v2_no_avg_split-ref_embedding/DeepSpeaker/1898_neutral_1898_145724_000010_000000.wav"
+                                    type="audio/wav" />
+                                  Your browser does not support the audio element.
+                                </audio>
+                              </td>
+
+
+                              <td>
+                                <audio controls>
+                                  <source
+                                    src="./samples/mos/new-VCTK_v2_no_avg_split-ref_embedding/SpeakerNet/1898_neutral_1898_145724_000010_000000.wav"
+                                    type="audio/wav" />
+                                  Your browser does not support the audio element.
+                                </audio>
+                              </td>
+
+
+                              <td>
+                                <audio controls>
+                                  <source
+                                    src="./samples/mos/new-VCTK_v2_no_avg_split-ref_embedding/ECAPA-TDNN/1898_neutral_1898_145724_000010_000000.wav"
+                                    type="audio/wav" />
+                                  Your browser does not support the audio element.
+                                </audio>
+                              </td>
+
+                              </tr>
+                              <!--  single sentence -->
+
+                              <td>
+                                <audio controls>
+                                  <source
+                                    src="./samples/mos/new-VCTK_v2_no_avg_split-ref_embedding/raw/8324_neutral_8324_286682_000026_000002.wav"
+                                    type="audio/wav" />
+                                  Your browser does not support the audio element.
+                                </audio>
+                              </td>
+
+
+                              <td>
+                                <audio controls>
+                                  <source
+                                    src="./samples/mos/new-VCTK_v2_no_avg_split-ref_embedding/reconstruct/8324_neutral_8324_286682_000026_000002.wav"
+                                    type="audio/wav" />
+                                  Your browser does not support the audio element.
+                                </audio>
+                              </td>
+
+
+                              <td>
+                                <audio controls>
+                                  <source
+                                    src="./samples/mos/new-VCTK_v2_no_avg_split-ref_embedding/xvector/8324_neutral_8324_286682_000026_000002.wav"
+                                    type="audio/wav" />
+                                  Your browser does not support the audio element.
+                                </audio>
+                              </td>
+
+
+                              <td>
+                                <audio controls>
+                                  <source
+                                    src="./samples/mos/new-VCTK_v2_no_avg_split-ref_embedding/DeepSpeaker/8324_neutral_8324_286682_000026_000002.wav"
+                                    type="audio/wav" />
+                                  Your browser does not support the audio element.
+                                </audio>
+                              </td>
+
+
+                              <td>
+                                <audio controls>
+                                  <source
+                                    src="./samples/mos/new-VCTK_v2_no_avg_split-ref_embedding/SpeakerNet/8324_neutral_8324_286682_000026_000002.wav"
+                                    type="audio/wav" />
+                                  Your browser does not support the audio element.
+                                </audio>
+                              </td>
+
+
+                              <td>
+                                <audio controls>
+                                  <source
+                                    src="./samples/mos/new-VCTK_v2_no_avg_split-ref_embedding/ECAPA-TDNN/8324_neutral_8324_286682_000026_000002.wav"
+                                    type="audio/wav" />
+                                  Your browser does not support the audio element.
+                                </audio>
+                              </td>
+
+                              </tr>
+
+
+                            </tbody>
+
+                          </table>
+                          <br>
+
+                          [1] E. Cooper, C.-I. Lai, Y. Yasuda, F. Fang, X. Wang, N. Chen,
+                          and J. Yamagishi, “Zero-shot multi-speaker text-to-speech with
+                          state-of-the-art neural speaker embeddings,” in ICASSP 2020-
+                          2020 IEEE International Conference on Acoustics, Speech and
+                          Signal Processing (ICASSP). IEEE, 2020, pp. 6184–6188.
+                          <p>
+
+
+
+
+
+          </div>
+
+        </div>
+      </div>
+      <hr>
+      <div class="row" id="ref">
+        <div class="col">
+          <!--<h2>References</h2>
+          
+         -->
+        </div>
+      </div>
+      <hr>
+      <!-- <div class="row" id="contact">
+          <div class="col">
+            <h2>Contact</h2>
+            <div></div>
+          </div>
+        </div> -->
+    </div>
+  </main>
+  <footer class="bg-secondary text-light mt-4 pt-3 pb-2 ">
+    <div class="container">
+      <p class="text-center">
+
+      </p>
+    </div>
+  </footer>
+  <!-- Optional JavaScript -->
+  <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+    integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+    crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"
+    integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49"
+    crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"
+    integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
+    crossorigin="anonymous"></script>
+</body>
+
+</html>
